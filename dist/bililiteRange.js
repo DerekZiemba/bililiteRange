@@ -67,7 +67,7 @@ function fakeloader(esmodules){
 	 *     source: bililiteRange.js
 	 *       file: bililiteRange.js
 	 *       repo: 
-	 *     commit: bcf2d15
+	 *     commit: 9309ea4
 	 *    version: 5.0.0
 	 *       date: 2024-05-09
 	 ************************************************/
@@ -889,7 +889,7 @@ function fakeloader(esmodules){
 	 *     source: bililiteRange.find.js
 	 *       file: bililiteRange.find.js
 	 *       repo: 
-	 *     commit: bcf2d15
+	 *     commit: 9309ea4
 	 *    version: 5.0.0
 	 *       date: 2024-05-09
 	 ************************************************/
@@ -1101,7 +1101,7 @@ function fakeloader(esmodules){
 	 *     source: bililiteRange.lines.js
 	 *       file: bililiteRange.lines.js
 	 *       repo: 
-	 *     commit: bcf2d15
+	 *     commit: 9309ea4
 	 *    version: 5.0.0
 	 *       date: 2024-05-09
 	 ************************************************/
@@ -1251,7 +1251,7 @@ function fakeloader(esmodules){
 	 *     source: jquery.sendkeys.js
 	 *       file: jquery.sendkeys.js
 	 *       repo: 
-	 *     commit: bcf2d15
+	 *     commit: 9309ea4
 	 *    version: 5.0.0
 	 *       date: 2024-05-09
 	 ************************************************/

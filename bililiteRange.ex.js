@@ -98,7 +98,7 @@ function commandCompletion(command){
 		if (commands[command]) return commands[command];
 		command = command.toLowerCase();
 		for (var trialCommand in commands){
-			if (trialCommand.substr(0,command.length) == command) return commands[trialCommand];
+			if (trialCommand.substring(0,command.length) == command) return commands[trialCommand];
 		}
 		throw new Error(command+" not defined");
 	})();
@@ -113,7 +113,7 @@ function splitCommands(commandLine, splitter = '|'){
 	var delims = /[/"]/; // regular expressions and strings
 	var escaper = /\\/;
 	for (var i = 0; i < commandLine.length; ++i){
-		if (commandLine.substr(i, splitter.length) == splitter){
+		if (commandLine.substring(i, splitter.length) == splitter){
 			commands.push (commandLine.slice(0, i));
 			commandLine = commandLine.slice(i+splitter.length);
 			i = -1; // restart the loop
