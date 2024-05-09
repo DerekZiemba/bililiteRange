@@ -4,21 +4,23 @@ Param(
 # concatenates files
 
 $targets = @{
-	"editor.js" = @(
-		"dwachss/historystack/history.js",
-		"dwachss/keymap/keymap.js",
-		"dwachss/status/status.js",
-		"dwachss/toolbar/toolbar.js",
-		"bililiteRange.js",
-		"bililiteRange.undo.js",
-		"bililiteRange.lines.js",
-		"bililiteRange.find.js",
-		"bililiteRange.ex.js",
-		"bililiteRange.evim.js"
-	);
+	# "editor.js" = @(
+	# 	"dwachss/historystack/history.js",
+	# 	"dwachss/keymap/keymap.js",
+	# 	"dwachss/status/status.js",
+	# 	"dwachss/toolbar/toolbar.js",
+	# 	"bililiteRange.js",
+	# 	"bililiteRange.undo.js",
+	# 	"bililiteRange.lines.js",
+	# 	"bililiteRange.find.js",
+	# 	"bililiteRange.ex.js",
+	# 	"bililiteRange.evim.js"
+	# );
 	"bililiteRange.js" = @(
 		"bililiteRange.js",
-		"bililiteRange.find.js"
+		"bililiteRange.find.js",
+    "bililiteRange.lines.js",
+    "jquery.sendkeys.js"
 	)
 }
 
@@ -34,9 +36,19 @@ function Get-Sha {
 	if ($repo) {
     $url = "https://api.github.com/repos/$repo/commits/master"
     $headers = @{Accept = 'application/vnd.github.sha'}
-    $req = (Invoke-WebRequest $url -Headers $headers)
-    $content = $req.Content[0..$shaSize]
-		[char[]]($content) -join ''
+    $pref = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = 'Stop'
+      $req = (Invoke-WebRequest $url -Headers $headers)
+      $content = $req.Content[0..$shaSize]
+      [char[]]($content) -join ''
+    } catch {
+      $ErrorActionPreference = 'Continue'
+      Write-Error $_
+      git rev-parse --short=$shaSize HEAD
+    } finally {
+      $ErrorActionPreference = $pref
+    }
 	}else{
 		git rev-parse --short=$shaSize HEAD
 	}
@@ -123,7 +135,6 @@ function Wrap-Content {
     "/$('*'*49)",
     $hashlines,
     " $('*'*48)/",
-    "",
     $Content,
     ""
   ) | % { $_ }
@@ -131,34 +142,52 @@ function Wrap-Content {
 }
 
 
+function Concat-Modules {
+  $PLACEHOLDER = '/**###INSERT_FAKE_ES_MODULE_CODE_HERE###**/'
+  $wrapper = (Get-Content './module-support.js') -join "`n"
 
-foreach ($target in $targets.Keys){
-  $path = "dist/$target"
-  $targetLines = [System.Collections.Generic.List[string]]::new()
-	foreach ($source in $targets[$target]){
-    $pref = $ErrorActionPreference
-    try {
-      $ErrorActionPreference = 'Break'
-      $file = Split-Path $Source -leaf
-      $repo =  Get-Repo $source
-      $content = Get-Source-Content $file $repo
-      $lines = Wrap-Content -Source $source -Content $content -Info @{ source = $source; file = $file; repo = $repo }
-      foreach($ln in $lines){
-        $targetLines.Add($ln)
+  foreach ($target in $targets.Keys){
+    $path = "dist/$target"
+    $modulecontents = [System.Collections.Generic.List[string]]::new()
+    foreach ($source in $targets[$target]){
+      $pref = $ErrorActionPreference
+      try {
+        $ErrorActionPreference = 'Break'
+        $file = Split-Path $Source -leaf
+        $repo =  Get-Repo $source
+        $info = @{ source = $source; file = $file; repo = $repo }
+        $content = Get-Source-Content $file $repo
+        $lines = Wrap-Content -Source $source -Content $content -Info $info
+        $lines = $lines | % { "`t$_" }
+        $module = ($lines -join "`n").Trim();
+
+        # if (!$module.Contains('module.exports') {
+        #   $module -match '\bfunction\s+([A-Z][a-zA-Z0-9_]+)\s*(\.*' | Out-Null
+        # }
+
+        $modulecontents.Add($module)
+      } catch {
+        $modulecontents = $null
+        $ErrorActionPreference = $pref
+        Write-Error $_
+      } finally {
+        $ErrorActionPreference = $pref
       }
-    } catch {
-      $targetLines = $null
-      $ErrorActionPreference = $pref
-      Write-Error $_
-    } finally {
-      $ErrorActionPreference = $pref
     }
-	}
-  if ($targetLines -and $targetLines.Count -gt 0) {
-    if ([System.IO.File]::Exists($path)) {
-      Remove-Item $path
+    if ($modulecontents -and $modulecontents.Count -gt 0) {
+
+      $wrappedmodules = ($modulecontents | % {
+        "(require, module)=>{`n$_`n}"
+      }) -join "`n,`n"
+
+      $content = $wrapper.Replace($PLACEHOLDER, $wrappedmodules)
+
+      if ([System.IO.File]::Exists($path)) {
+        Remove-Item $path
+      }
+      $content >> $path
     }
-    $content = ($targetLines -join "`n").Trim();
-    $content >> $path
   }
 }
+
+Concat-Modules

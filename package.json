@@ -1,6 +1,6 @@
 {
   "name": "@dwachss/bililite-range",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "description": "bililiteRange is a javascript library that abstracts text selection and replacement.",
   "keywords": [
     "sendkeys",
@@ -12,9 +12,14 @@
 		"email": "d.wachss@prodigy.net",
 		"url": "https://bililite.com/blog"
 	},
+  "contributors": [
+    {
+      "name": "Derek Ziemba"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/dwachss/bililiteRange.git"
+    "url": "https://github.com/DerekZiemba/bililiteRange.git"
   },
   "license": "MIT",
   "homepage": "https://github.com/dwachss/bililiteRange",
@@ -29,6 +34,9 @@
   },
   "scripts": {
     "build": "pwsh ./package.ps1 -Local"
+  },
+  "volta": {
+    "node": "22.1.0"
   },
   "dependencies": {
 
